@@ -1,18 +1,19 @@
 import {User} from "./User";
 import {Company} from "./Company";
 
-interface Mappable {
+export interface Mappable {
     location: {
         lat: number,
         lng: number
     }
+    markerContent(): string;
 }
 
 export class CustomMap {
-    private googleMap: google.maps.Map | null;
+    private googleMap: google.maps.Map | undefined;
 
     constructor(divId: string) {
-        const el = document.getElementById(divId);
+        const el: HTMLElement | null = document.getElementById(divId);
         if (el) {
             this.googleMap = new google.maps.Map(el, {
                 zoom: 5,
@@ -21,20 +22,26 @@ export class CustomMap {
                     lng: 10
                 },
             });
-        } else {
-            this.googleMap = null;
         }
+
     }
 
     addMarker(mappable: Mappable): void {
-        if(this.googleMap) {
-            new google.maps.Marker({
-                map: this.googleMap,
-                position: {
-                    lat: mappable.location.lat,
-                    lng: mappable.location.lng
-                }
+        const marker = new google.maps.Marker({
+            map: this.googleMap,
+            position: {
+                lat: mappable.location.lat,
+                lng: mappable.location.lng
+            }
+        });
+
+        marker.addListener('click', () => {
+            const infoWindow = new google.maps.InfoWindow({
+                content: mappable.markerContent()
             });
-        }
+            infoWindow.open(this.googleMap, marker);
+        });
     }
+
+
 }
